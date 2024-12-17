@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <h2>Чат: {{ chat.name }}</h2>
+
+    <!-- Форма для удаления чата -->
+    <form action="{% url 'delete_chat' chat.id %}" method="POST" style="margin-bottom: 20px;"
+          onsubmit="return confirm('Вы точно уверены, что хотите удалить чат?');">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Удалить чат</button>
+    </form>
+
+    <!-- Поле для сообщений -->
+    <div id="messages" style="height: 400px; overflow-y: auto; border: 1px solid #ccc; padding: 10px;">
+        {% for message in messages %}
+            <p><strong>{{ message.sender.username }}:</strong> {{ message.content }}</p>
+        {% endfor %}
+    </div>
+
+    <!-- Форма для отправки нового сообщения -->
+    <form id="messageForm" method="POST" action="" style="margin-top: 10px;">
+        {% csrf_token %}
+        <input type="text" id="messageInput" name="content" placeholder="Введите сообщение" required style="width: 80%; padding: 5px;">
+        <button type="submit" style="padding: 5px 10px;">Отправить</button>
+    </form>
+
+</div>
+
+<!-- WebSocket и JavaScript -->
+<script>
+    const chatSocket = new WebSocket(
+        'ws://' + window.location.host + '/ws/chat/' + '{{ chat.id }}/'
+    );
+
+    // При получении сообщения от WebSocket
+    chatSocket.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+        const messageContainer = document.querySelector('#messages');
+
+        // Добавляем новое сообщение
+        messageContainer.innerHTML += `<p><strong>${data.sender}:</strong> ${data.message}</p>`;
+
+        // Прокручиваем вниз
+        messageContainer.scrollTop = messageContainer.scrollHeight;
+    };
+
+    // Обработка закрытия WebSocket
+    chatSocket.onclose = function(e) {
+        console.error('WebSocket закрыт неожиданно');
+    };
+
+    // Обработка отправки формы
+    document.querySelector('#messageForm').onsubmit = function(e) {
+        e.preventDefault();
+        const messageInputDom = document.querySelector('#messageInput');
+        const message = messageInputDom.value;
+
+        if (message.trim()) { // Проверка, что сообщение не пустое
+            chatSocket.send(JSON.stringify({
+                'message': message
+            }));
+            messageInputDom.value = ''; // Очищаем поле ввода
+        }
+    };
+</script>
+{% endblock %}

@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <h2>Ваши чаты</h2>
+    <!-- Контейнер для списка чатов -->
+    <ul id="chat-list">
+        {% for chat in chats %}
+        <li>
+            <a href="{% url 'chat_room' chat.id %}">{{ chat.name }}</a>
+        </li>
+        {% empty %}
+        <li>У вас пока нет чатов.</li>
+        {% endfor %}
+    </ul>
+    <a href="{% url 'create_chat' %}" class="btn">Создать групповой чат</a>
+</div>
+
+<!-- JavaScript для обновления списка чатов -->
+<script>
+    function loadChats() {
+        fetch("{% url 'chat_list' %}")
+            .then(response => response.text())
+            .then(data => {
+                const parser = new DOMParser();
+                const html = parser.parseFromString(data, 'text/html');
+                const chats = html.querySelector('#chat-list').innerHTML;
+                document.getElementById('chat-list').innerHTML = chats;
+            });
+    }
+
+    // Обновляем список чатов каждые 3 секунды
+    setInterval(loadChats, 3000);
+</script>
+{% endblock %}

@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container">
+    <h1 class="welcome-title">Добро пожаловать в Мессенджер Про!</h1>
+    <p class="welcome-text">Авторизуйтесь для начала работы с мессенджером.</p>
+    <div class="buttons">
+        <a href="{% url 'login' %}" class="btn">Вход</a>
+        <a href="{% url 'register' %}" class="btn btn-secondary">Регистрация</a>
+    </div>
+</div>
+{% endblock %}

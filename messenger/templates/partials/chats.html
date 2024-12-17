@@ -1,0 +1,7 @@
+{% for chat in chats %}
+<li>
+    <a href="{% url 'chat_room' chat.id %}">{{ chat.name }}</a>
+</li>
+{% empty %}
+<li>У вас пока нет чатов.</li>
+{% endfor %}
